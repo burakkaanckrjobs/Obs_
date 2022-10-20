@@ -1,0 +1,107 @@
+﻿@{
+    ViewData["Title"] = "Hobby";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="row">
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-8 mt-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Hobiler Listesi</h5>
+                    </div>
+                    <div class="card-body table-responsive">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="bg-dark text-light">
+                                <tr>
+                                    <th>Hobi Adı</th>
+                                    <th>Düzenle</th>
+                                </tr>
+                            </thead>
+                            <tbody id="datalist">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mt-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Yeni Hobi <span id="FormTitle">Ekle</span></h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="HobbyForm">
+                            <div class="row">
+                                <div class="col-12 mb-2">
+                                    <input type="text" placeholder="Hobi" class="form-control" name="Hobbys" value="" id="Hobby" />
+                                    <input type="hidden" value="0" id="HobbyId" name="Id" />
+                                </div>
+                                <div class="col-md-12 text-end">
+                                    <button type="button" class="btn btn-success" id="addHobby">Ekle</button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script>
+        function GetAllHobby() {
+            $.ajax({
+                url: '/Home/GetAllHobby',
+                success: function (data) {
+                    $('#datalist').empty();
+                    for (let i = 0; i < data.length; i++) {
+                        var html = `
+                                 <tr>
+                                     <td>${data[i].hobbys}</td>
+                                             <td> <button class="btn btn-success" onclick="UpdateHobby(${data[i].id})">Güncelle</button></td>
+                                 </tr>`;
+                        $('#datalist').append(html);
+                    }
+
+                }
+            })
+        }
+        $(document).ready(function () {
+            GetAllHobby()
+        });
+        $('#addHobby').click(function () {
+            var name = $('#Hobby').val();
+            var id = $('#HobbyId').val();
+            if (name == '') {
+                alert("Lütfen Tüm Alanları Doldurunuz");
+            }
+            else {
+                var hobby = $('#HobbyForm').serializeJSON();
+                $.ajax({
+                    url: '/Home/AddOrUpdateHobby',
+                    type: 'POST',
+                    data: { hobby: hobby },
+                    success: function () {
+                        GetAllHobby()
+                        $('#Hobby').val('');
+                        $('#HobbyId').val(0);
+                        $('#addHobby').text("Ekle");
+                    }
+                })
+            }
+
+        })
+        function UpdateHobby(id) {
+            $('#addHobby').text("Güncelle");
+            $.ajax({
+                url: '/Home/GetHobbyData',
+                data: { id: id },
+                success: function (data) {
+                    $('#Hobby').val(data.hobbys)
+                    $('#HobbyId').val(id)
+                }
+            })
+        }
+    </script>
+}
